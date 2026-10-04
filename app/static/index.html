@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨水调蓄池推演</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>雨水调蓄池推演系统</h1>
+  <p class="sub">水头 = 池底高程 + 水量 / 截面积 ｜ 管道 q = c·√ΔH（单向重力，可成环）｜ 泵启于启位、停于停位</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>1. 基本参数</h2>
+    <div class="formrow">
+      <label>推演时长 (s)
+        <input type="number" id="duration" value="7200" step="any">
+      </label>
+      <button id="runBtn" class="primary">开始推演</button>
+      <button id="demoBtn">载入示例</button>
+      <span id="status" class="status"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>2. 调蓄池</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>编号</th><th>池底高程 (m)</th><th>截面积 (m²)</th>
+          <th>容量 (m³)</th><th>初始水量 (m³)</th><th></th>
+        </tr></thead>
+        <tbody id="tankBody"></tbody>
+      </table>
+    </div>
+    <button data-add="tank">＋ 添加调蓄池</button>
+  </section>
+
+  <section class="card">
+    <h2>3. 分段恒定入流（非负）</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>所属池</th><th>开始 (s)</th><th>结束 (s)</th>
+          <th>入流流量 (m³/s)</th><th></th>
+        </tr></thead>
+        <tbody id="intervalBody"></tbody>
+      </table>
+    </div>
+    <button data-add="interval">＋ 添加入流时段</button>
+  </section>
+
+  <section class="card">
+    <h2>4. 重力管道（单向，可成环）</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>编号</th><th>起点池</th><th>终点池</th>
+          <th>系数 c</th><th></th>
+        </tr></thead>
+        <tbody id="pipeBody"></tbody>
+      </table>
+    </div>
+    <button data-add="pipe">＋ 添加管道</button>
+  </section>
+
+  <section class="card">
+    <h2>5. 排外泵</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr>
+          <th>编号</th><th>所属池</th><th>流量 (m³/s)</th>
+          <th>启泵水深 (m)</th><th>停泵水深 (m)</th><th>初态</th><th></th>
+        </tr></thead>
+        <tbody id="pumpBody"></tbody>
+      </table>
+    </div>
+    <button data-add="pump">＋ 添加泵</button>
+  </section>
+
+  <section id="results" class="hidden">
+    <section class="card">
+      <h2>水位曲线</h2>
+      <div class="formrow">
+        <label><input type="radio" name="levelMode" value="depth" checked> 水深 (m，相对池底)</label>
+        <label><input type="radio" name="levelMode" value="head"> 水头高程 (m)</label>
+        <span class="hint">竖虚线：泵切换；横虚线：启泵/停泵水深；红线顶部：满池水深</span>
+      </div>
+      <canvas id="levelChart" height="420"></canvas>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card">
+        <h2>管道累计过水量</h2>
+        <canvas id="pipeChart" height="300"></canvas>
+        <div id="pipeLegend" class="legend"></div>
+      </section>
+      <section class="card">
+        <h2>泵累计排量 / 各池累计溢流</h2>
+        <canvas id="flowChart" height="300"></canvas>
+        <div id="flowLegend" class="legend"></div>
+      </section>
+    </div>
+
+    <div class="grid2">
+      <section class="card">
+        <h2>泵切换时刻</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>时刻 (s)</th><th>泵</th><th>动作</th></tr></thead>
+            <tbody id="switchBody"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="card">
+        <h2>溢流统计与水量收支</h2>
+        <div class="tablewrap">
+          <table id="overflowTable">
+            <thead><tr><th>调蓄池</th><th>累计溢流 (m³)</th></tr></thead>
+            <tbody id="overflowBody"></tbody>
+          </table>
+        </div>
+        <div id="balance" class="balance"></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
